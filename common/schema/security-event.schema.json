@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aecp.internal/schemas/security-event",
+  "title": "SecurityEvent",
+  "description": "Emitted when a policy violation is detected. Always emitted before blocking execution.",
+  "allOf": [
+    { "$ref": "./base-event.schema.json" },
+    {
+      "type": "object",
+      "required": ["agent_id", "violation_type", "severity", "details"],
+      "properties": {
+        "event_type": {
+          "const": "agent.security"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent that triggered the violation."
+        },
+        "violation_type": {
+          "type": "string",
+          "enum": [
+            "user_credential_detected",
+            "unauthorized_action",
+            "rate_limit_exceeded",
+            "cost_limit_exceeded"
+          ],
+          "description": "Classification of the policy violation."
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+          "description": "Severity level. CRITICAL violations always block execution."
+        },
+        "details": {
+          "type": "object",
+          "required": ["message", "blocked"],
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "Human-readable description of the violation."
+            },
+            "blocked": {
+              "type": "boolean",
+              "description": "Whether execution was halted as a result of this violation."
+            },
+            "action_attempted": {
+              "type": ["string", "null"],
+              "description": "The action the agent was attempting when the violation was detected."
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "event_id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+      "event_type": "agent.security",
+      "schema_version": "1.0",
+      "timestamp": "2026-03-29T14:01:10.000Z",
+      "correlation_id": "f0e1d2c3-b4a5-6789-0fed-cba987654321",
+      "agent_id": "jira-agent",
+      "violation_type": "unauthorized_action",
+      "severity": "HIGH",
+      "details": {
+        "message": "Action 'jira.delete_project' is not permitted. Allowed: [jira.create_ticket, jira.search_issues]",
+        "blocked": true,
+        "action_attempted": "jira.delete_project"
+      }
+    },
+    {
+      "event_id": "f6a7b8c9-d0e1-2345-fabc-456789012345",
+      "event_type": "agent.security",
+      "schema_version": "1.0",
+      "timestamp": "2026-03-29T14:01:11.000Z",
+      "correlation_id": "f0e1d2c3-b4a5-6789-0fed-cba987654321",
+      "agent_id": "jira-agent",
+      "violation_type": "user_credential_detected",
+      "severity": "CRITICAL",
+      "details": {
+        "message": "User credentials detected. Only service account tokens are permitted.",
+        "blocked": true,
+        "action_attempted": null
+      }
+    }
+  ]
+}

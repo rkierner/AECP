@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aecp.internal/schemas/agent-registration-event",
+  "title": "AgentRegistrationEvent",
+  "description": "Emitted once on agent startup. Registers the agent with the Control Plane and establishes its identity.",
+  "allOf": [
+    { "$ref": "./base-event.schema.json" },
+    {
+      "type": "object",
+      "required": ["agent_id", "runtime", "version", "owner"],
+      "properties": {
+        "event_type": {
+          "const": "agent.registration"
+        },
+        "agent_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Unique stable identifier for this agent. Should be human-readable (e.g. jira-agent, openai-summarizer)."
+        },
+        "runtime": {
+          "type": "string",
+          "enum": ["java", "python", "node", "dotnet", "go"],
+          "description": "Language runtime the agent is executing in."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+",
+          "description": "Semantic version of the agent deployment (e.g. 1.2.3)."
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Team or individual responsible for this agent (e.g. platform-team, alice@corp.com)."
+        },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Dot-notation action names this agent is capable of performing.",
+          "default": [],
+          "examples": [["jira.create_ticket", "jira.search_issues"]]
+        },
+        "permissions_requested": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Permission scopes this agent requests. Used for audit and approval workflows.",
+          "default": [],
+          "examples": [["jira:write", "jira:read"]]
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "event_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "event_type": "agent.registration",
+      "schema_version": "1.0",
+      "timestamp": "2026-03-29T14:00:00.000Z",
+      "correlation_id": "f0e1d2c3-b4a5-6789-0fed-cba987654321",
+      "agent_id": "jira-agent",
+      "runtime": "python",
+      "version": "1.0.0",
+      "owner": "platform-team",
+      "capabilities": ["jira.create_ticket", "jira.search_issues"],
+      "permissions_requested": ["jira:write", "jira:read"]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aecp.internal/schemas/heartbeat-event",
+  "title": "HeartbeatEvent",
+  "description": "Emitted periodically (default 30s) to signal agent liveness and health status.",
+  "allOf": [
+    { "$ref": "./base-event.schema.json" },
+    {
+      "type": "object",
+      "required": ["agent_id", "status", "last_seen"],
+      "properties": {
+        "event_type": {
+          "const": "agent.heartbeat"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent emitting this heartbeat."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "degraded", "unhealthy"],
+          "description": "Self-reported health status. 'degraded' indicates partial functionality (e.g. MQ publish errors)."
+        },
+        "last_seen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "UTC timestamp of last successful activity (same as or before timestamp)."
+        },
+        "metadata": {
+          "type": ["object", "null"],
+          "description": "Optional operational metrics.",
+          "properties": {
+            "uptime_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Seconds since agent process started."
+            },
+            "events_published": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Cumulative events successfully published since startup."
+            },
+            "publish_errors": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Cumulative publish failures since startup."
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "event_id": "a7b8c9d0-e1f2-3456-abcd-567890123456",
+      "event_type": "agent.heartbeat",
+      "schema_version": "1.0",
+      "timestamp": "2026-03-29T14:30:00.000Z",
+      "correlation_id": "f0e1d2c3-b4a5-6789-0fed-cba987654321",
+      "agent_id": "jira-agent",
+      "status": "healthy",
+      "last_seen": "2026-03-29T14:30:00.000Z",
+      "metadata": {
+        "uptime_seconds": 1800,
+        "events_published": 42,
+        "publish_errors": 0
+      }
+    }
+  ]
+}

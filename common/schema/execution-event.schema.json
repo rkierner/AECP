@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aecp.internal/schemas/execution-event",
+  "title": "ExecutionEvent",
+  "description": "Emitted after every governed agent action. Captures the full lifecycle of one discrete operation.",
+  "allOf": [
+    { "$ref": "./base-event.schema.json" },
+    {
+      "type": "object",
+      "required": ["agent_id", "execution_id", "timestamp_start", "action", "status"],
+      "properties": {
+        "event_type": {
+          "const": "agent.execution"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent that performed this action."
+        },
+        "execution_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique ID for this specific action invocation. Scoped within a correlation_id."
+        },
+        "timestamp_start": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the action began executing (UTC ISO 8601)."
+        },
+        "timestamp_end": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "When the action finished (UTC ISO 8601). Null if still in-flight."
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Dot-notation action name (e.g. jira.create_ticket, openai.chat_completion)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["success", "failure", "timeout", "blocked"],
+          "description": "Outcome of the action. 'blocked' indicates a policy violation prevented execution."
+        },
+        "latency_ms": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Wall-clock duration in milliseconds from start to end."
+        },
+        "error_message": {
+          "type": ["string", "null"],
+          "description": "Human-readable error detail. Present only when status is failure or timeout."
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "event_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "event_type": "agent.execution",
+      "schema_version": "1.0",
+      "timestamp": "2026-03-29T14:01:05.123Z",
+      "correlation_id": "f0e1d2c3-b4a5-6789-0fed-cba987654321",
+      "agent_id": "jira-agent",
+      "execution_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "timestamp_start": "2026-03-29T14:01:05.000Z",
+      "timestamp_end": "2026-03-29T14:01:05.123Z",
+      "action": "jira.create_ticket",
+      "status": "success",
+      "latency_ms": 123,
+      "error_message": null
+    }
+  ]
+}

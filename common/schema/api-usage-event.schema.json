@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aecp.internal/schemas/api-usage-event",
+  "title": "ApiUsageEvent",
+  "description": "Emitted after every external API / LLM call. Enables cost tracking and quota enforcement.",
+  "allOf": [
+    { "$ref": "./base-event.schema.json" },
+    {
+      "type": "object",
+      "required": ["agent_id", "execution_id", "provider", "token_type", "tokens_used"],
+      "properties": {
+        "event_type": {
+          "const": "agent.api_usage"
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Agent that made the API call."
+        },
+        "execution_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Links this usage event to the parent ExecutionEvent."
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "description": "API provider identifier (e.g. openai, anthropic, aws, google, cursor)."
+        },
+        "token_type": {
+          "type": "string",
+          "const": "service_account",
+          "description": "MUST always be 'service_account'. User credentials are strictly prohibited by policy."
+        },
+        "tokens_used": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total tokens consumed (prompt + completion for LLM calls)."
+        },
+        "estimated_cost_usd": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Estimated cost in USD. Computed by the SDK based on provider pricing at call time.",
+          "default": 0
+        },
+        "model": {
+          "type": ["string", "null"],
+          "description": "Optional: specific model version used (e.g. gpt-4o, claude-sonnet-4-6)."
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "event_id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+      "event_type": "agent.api_usage",
+      "schema_version": "1.0",
+      "timestamp": "2026-03-29T14:01:05.200Z",
+      "correlation_id": "f0e1d2c3-b4a5-6789-0fed-cba987654321",
+      "agent_id": "jira-agent",
+      "execution_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "provider": "openai",
+      "token_type": "service_account",
+      "tokens_used": 512,
+      "estimated_cost_usd": 0.001,
+      "model": "gpt-4o"
+    }
+  ]
+}

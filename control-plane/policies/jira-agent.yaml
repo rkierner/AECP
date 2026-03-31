@@ -1,0 +1,16 @@
+agent_id: jira-agent
+
+allowed_actions:
+  - jira.create_ticket
+  - jira.search_issues
+  - jira.update_ticket
+  - jira.add_comment
+
+credentials:
+  type: service_account_only
+
+cost_limits:
+  daily_usd: 50.0
+
+rate_limits:
+  requests_per_minute: 100

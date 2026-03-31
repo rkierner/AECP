@@ -1,0 +1,15 @@
+agent_id: example-python-agent
+
+allowed_actions:
+  - jira.create_ticket
+  - openai.chat_completion
+  - search.web
+
+credentials:
+  type: service_account_only
+
+cost_limits:
+  daily_usd: 10.0
+
+rate_limits:
+  requests_per_minute: 60

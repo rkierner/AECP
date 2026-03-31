@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aecp.internal/schemas/base-event",
+  "title": "BaseEvent",
+  "description": "Common fields present on every AECP event. All event schemas extend this via allOf.",
+  "type": "object",
+  "required": ["event_id", "event_type", "schema_version", "timestamp", "correlation_id"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier (UUID v4) for this event instance. Never reused."
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "agent.registration",
+        "agent.execution",
+        "agent.api_usage",
+        "agent.security",
+        "agent.heartbeat"
+      ],
+      "description": "Discriminator field — identifies the event category for routing and filtering."
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$",
+      "description": "Schema version for forward-compatibility. Consumers should handle unknown minor versions gracefully.",
+      "default": "1.0"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC creation time of this event in ISO 8601 format (e.g. 2026-03-29T14:00:00.000Z)."
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Trace correlation ID propagated across the full execution chain. Used for end-to-end observability."
+    }
+  },
+  "additionalProperties": true
+}
