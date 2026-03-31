@@ -30,11 +30,17 @@ A production-ready platform for making agentic AI workloads **observable, govern
                     │  aecp.events.dlq    │
                     └──────────┬──────────┘
                                │
-                    ┌──────────▼──────────┐
-                    │  Observability      │
-                    │  (New Relic /       │
-                    │   Datadog / etc.)   │
-                    └─────────────────────┘
+                    ┌──────────▼──────────┐         ┌─────────────────────┐
+                    │  Observability      │         │  Dashboard          │
+                    │  (New Relic /       │         │  (Next.js)          │
+                    │   Datadog / etc.)   │         │  localhost:3000     │
+                    └─────────────────────┘         └──────────┬──────────┘
+                                                               │ REST + SSE
+                                                    ┌──────────▼──────────┐
+                                                    │  Control Plane      │
+                                                    │  GET /events/stats  │
+                                                    │  GET /events/stream │
+                                                    └─────────────────────┘
 ```
 
 ## Repository Layout
@@ -45,8 +51,9 @@ AECP/
 ├── sdk/java/             # Java 17 SDK (Maven)
 ├── sdk/python/           # Python 3.11+ SDK (pip/setuptools)
 ├── control-plane/        # FastAPI control plane service
+├── dashboard/            # Next.js real-time dashboard (port 3000)
 ├── examples/             # Runnable reference agents
-├── docker-compose.yml    # Kafka + Control Plane local stack
+├── docker-compose.yml    # Kafka + Control Plane + Dashboard local stack
 └── docs/                 # Full documentation
 ```
 
@@ -60,6 +67,7 @@ AECP/
 | Python | 3.9+ | `brew install python@3.12` |
 | Java JDK | 17+ | `brew install openjdk@17` |
 | Maven | 3.8+ | `brew install maven` |
+| Node.js | 20+ | `brew install node` (dashboard only) |
 
 > **Python note:** macOS ships with Python 3.9. The example uses a `run.sh` script that creates an isolated venv automatically — no manual `pip` needed.
 >
@@ -81,6 +89,7 @@ docker-compose up -d
 This starts:
 - **Kafka** on `localhost:9092` (topics `aecp.events` and `aecp.events.dlq` auto-created)
 - **Control Plane** on `http://localhost:8080`
+- **Dashboard** on `http://localhost:3000`
 
 Verify: `curl http://localhost:8080/health`
 
@@ -169,14 +178,45 @@ Agents must use `CredentialProvider` — never raw token strings. The SDK blocks
 
 ---
 
+## Dashboard
+
+The dashboard provides a real-time view of all agents, events, and spending across the platform.
+
+**Open `http://localhost:3000` after running `docker-compose up -d`.**
+
+| Section | Description |
+|---|---|
+| Stat cards | Active agents, events today, security violations, daily spend vs. budget |
+| Event Volume | Hourly execution + API call volume over the last 24 hours |
+| Cost by Agent | Weekly spending breakdown per agent |
+| Registered Agents | Live agent table with status, heartbeat age, spend progress bars, and violation counts |
+| Live Event Stream | Real-time feed of all events from Kafka via SSE; supports pause/resume |
+
+To run the dashboard in development mode (without Docker):
+
+```bash
+cd dashboard
+npm install
+npm run dev   # → http://localhost:3000
+```
+
+Requires the control plane to be running on `http://localhost:8080`. Theme (light/dark) is persisted per browser.
+
+---
+
 ## Control Plane API
 
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/agents/register` | Register an agent |
+| `GET` | `/agents` | List all registered agents |
 | `GET` | `/agents/{agent_id}` | Get agent metadata |
 | `GET` | `/policies/{agent_id}` | Get agent policy |
 | `POST` | `/violations` | Report a security violation |
+| `GET` | `/violations` | List all reported violations |
+| `GET` | `/events` | Recent event history |
+| `GET` | `/events/stats` | Aggregated dashboard statistics |
+| `GET` | `/events/stream` | Live event stream (SSE) |
 | `GET` | `/health` | Health check |
 
 Interactive docs: `http://localhost:8080/docs`

@@ -9,6 +9,15 @@ router = APIRouter()
 logger = structlog.get_logger()
 
 
+@router.get(
+    "",
+    response_model=list[AgentMetadata],
+    summary="List all registered agents",
+)
+async def list_agents(request: Request) -> list[AgentMetadata]:
+    return request.app.state.agent_store.list_all()
+
+
 @router.post(
     "/register",
     response_model=AgentRegistrationResponse,
